@@ -33,7 +33,8 @@
 
 #define luaY_checklimit(fs,v,l,m)	if ((v)>(l)) errorlimit(fs,l,m)
 
-
+#define TK_OPEN '{'
+#define TK_CLOSE '}'
 /*
 ** nodes for block list (list of active blocks)
 */
@@ -573,7 +574,7 @@ static void parlist (LexState *ls) {
 
 
 static void body (LexState *ls, expdesc *e, int needself, int line) {
-  /* body ->  `(' parlist `)' chunk END */
+  /* body ->  `(' parlist `)' DO chunk END */
   FuncState new_fs;
   open_func(ls, &new_fs);
   new_fs.f->linedefined = line;
@@ -584,9 +585,10 @@ static void body (LexState *ls, expdesc *e, int needself, int line) {
   }
   parlist(ls);
   checknext(ls, ')');
+  checknext(ls, TK_OPEN);
   chunk(ls);
   new_fs.f->lastlinedefined = ls->linenumber;
-  check_match(ls, TK_END, TK_FUNCTION, line);
+  check_match(ls, TK_CLOSE, TK_FUNCTION, line);
   close_func(ls);
   pushclosure(ls, &new_fs, e);
 }
@@ -869,7 +871,7 @@ static void expr (LexState *ls, expdesc *v) {
 
 static int block_follow (int token) {
   switch (token) {
-    case TK_ELSE: case TK_ELSEIF: case TK_END:
+    case TK_ELSE: case TK_ELSEIF: case TK_CLOSE:
     case TK_UNTIL: case TK_EOS:
       return 1;
     default: return 0;
@@ -995,10 +997,10 @@ static void whilestat (LexState *ls, int line) {
   whileinit = luaK_getlabel(fs);
   condexit = cond(ls);
   enterblock(fs, &bl, 1);
-  checknext(ls, TK_DO);
+  checknext(ls, TK_OPEN);
   block(ls);
   luaK_patchlist(fs, luaK_jump(fs), whileinit);
-  check_match(ls, TK_END, TK_WHILE, line);
+  check_match(ls, TK_CLOSE, TK_WHILE, line);
   leaveblock(fs);
   luaK_patchtohere(fs, condexit);  /* false conditions finish the loop */
 }
@@ -1046,7 +1048,7 @@ static void forbody (LexState *ls, int base, int line, int nvars, int isnum) {
   FuncState *fs = ls->fs;
   int prep, endfor;
   adjustlocalvars(ls, 3);  /* control variables */
-  checknext(ls, TK_DO);
+  checknext(ls, TK_OPEN);
   prep = isnum ? luaK_codeAsBx(fs, OP_FORPREP, base, NO_JUMP) : luaK_jump(fs);
   enterblock(fs, &bl, 0);  /* scope for declared variables */
   adjustlocalvars(ls, nvars);
@@ -1119,18 +1121,25 @@ static void forstat (LexState *ls, int line) {
     case ',': case TK_IN: forlist(ls, varname); break;
     default: luaX_syntaxerror(ls, LUA_QL("=") " or " LUA_QL("in") " expected");
   }
-  check_match(ls, TK_END, TK_FOR, line);
+  check_match(ls, TK_CLOSE, TK_FOR, line);
   leaveblock(fs);  /* loop scope (`break' jumps to this point) */
 }
 
 
-static int test_then_block (LexState *ls) {
-  /* test_then_block -> [IF | ELSEIF] cond THEN block */
+static int test_do_block (LexState *ls) {
+  /* test_then_block -> [IF | ELSEIF] '(' cond ')' DO block */
   int condexit;
   luaX_next(ls);  /* skip IF or ELSEIF */
+  
+  checknext(ls, '('); /* '(' */
+    
   condexit = cond(ls);
-  checknext(ls, TK_THEN);
-  block(ls);  /* `then' part */
+    
+  checknext(ls, ')'); /* ')' */
+    
+  checknext(ls, TK_OPEN);
+    
+  block(ls);  /* `DO' part */
   return condexit;
 }
 
@@ -1140,11 +1149,11 @@ static void ifstat (LexState *ls, int line) {
   FuncState *fs = ls->fs;
   int flist;
   int escapelist = NO_JUMP;
-  flist = test_then_block(ls);  /* IF cond THEN block */
+  flist = test_do_block(ls);  /* IF cond DO block */
   while (ls->t.token == TK_ELSEIF) {
     luaK_concat(fs, &escapelist, luaK_jump(fs));
     luaK_patchtohere(fs, flist);
-    flist = test_then_block(ls);  /* ELSEIF cond THEN block */
+    flist = test_do_block(ls);  /* ELSEIF cond DO block */
   }
   if (ls->t.token == TK_ELSE) {
     luaK_concat(fs, &escapelist, luaK_jump(fs));
@@ -1155,7 +1164,7 @@ static void ifstat (LexState *ls, int line) {
   else
     luaK_concat(fs, &escapelist, flist);
   luaK_patchtohere(fs, escapelist);
-  check_match(ls, TK_END, TK_IF, line);
+  check_match(ls, TK_CLOSE, TK_IF, line);
 }
 
 
@@ -1276,10 +1285,10 @@ static int statement (LexState *ls) {
       whilestat(ls, line);
       return 0;
     }
-    case TK_DO: {  /* stat -> DO block END */
+    case TK_OPEN: {  /* stat -> DO block END */
       luaX_next(ls);  /* skip DO */
       block(ls);
-      check_match(ls, TK_END, TK_DO, line);
+      check_match(ls, TK_CLOSE, TK_OPEN, line);
       return 0;
     }
     case TK_FOR: {  /* stat -> forstat */
