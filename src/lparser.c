@@ -1127,7 +1127,7 @@ static void forstat (LexState *ls, int line) {
 
 
 static int test_do_block (LexState *ls) {
-  /* test_then_block -> [IF | ELSEIF] '(' cond ')' DO block */
+  /* test_then_block -> [IF | ELSEIF] '(' cond ')' OPEN block  CLOSE */
   int condexit;
   luaX_next(ls);  /* skip IF or ELSEIF */
   
@@ -1137,9 +1137,12 @@ static int test_do_block (LexState *ls) {
     
   checknext(ls, ')'); /* ')' */
     
-  checknext(ls, TK_OPEN);
+  checknext(ls, TK_OPEN); // OPEN
     
   block(ls);  /* `DO' part */
+    
+  checknext(ls, TK_CLOSE); //CLOSE
+    
   return condexit;
 }
 
@@ -1159,12 +1162,15 @@ static void ifstat (LexState *ls, int line) {
     luaK_concat(fs, &escapelist, luaK_jump(fs));
     luaK_patchtohere(fs, flist);
     luaX_next(ls);  /* skip ELSE (after patch, for correct line info) */
+    
+    checknext(ls, TK_OPEN); // OPEN
     block(ls);  /* `else' part */
+    checknext(ls, TK_CLOSE); //CLOSE
   }
   else
     luaK_concat(fs, &escapelist, flist);
   luaK_patchtohere(fs, escapelist);
-  check_match(ls, TK_CLOSE, TK_IF, line);
+  /* check_match(ls, TK_CLOSE, TK_IF, line); no end */
 }
 
 
