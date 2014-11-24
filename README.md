@@ -1,29 +1,35 @@
 Lua-5.1-CLike
 =============
  This is a modified version of lua with a C-like syntax, I made some little changes to the parser.
- 
-* New if statement
+
+* New if statement:
 
   ```BNF
   'if' '(' <bool exp> ')' '{' <statements> '}' {'elif' '{' <statements> '}' } ['else' '{' <statements> '}']
   ```
 
-* New for statement
+* New for statement:
   ```BNF
-  'for' .... '{' <statements> '}' 
+  'for' .... '{' <statements> '}'
   ```
 
-* New while statement
+* New while statement:
 
   ```BNF
-  'while' '(' <bool exp> ')' '{' <statements> '}' 
+  'while' '(' <bool exp> ')' '{' <statements> '}'
   ```
 
-* New function statement
+* New function statement:
 
   ```BNF
-  'def' [name] '(' <args> ')'  '{' <statements> '}' 
+  'def' [name] '(' <args> ')'  '{' <statements> '}'
   ```
+* Not equal operator is changed in:
+
+  ```BNF
+  '!='
+  ```
+
 
 Examples:
 =============
@@ -36,12 +42,12 @@ Examples:
       {
          print("foo")
       }
-      for i=1,200 
+      for i=1,200
       {
          foo()
       }
   }
-  elif(a=="b")
+  elif(a!="b")
   {
      a=def(){ print("NONE") }
      while ( true )
@@ -51,24 +57,24 @@ Examples:
      }
   }
   else
-  { 
+  {
      c=(def(){return 1})()
   }
   ```
-  
+
   * LUA:
-  
+
   ```LUA
-  if  a=="x" 
+  if  a=="x"
   then
         function foo()
            print("foo")
         end
         for i=1,200
-        do 
+        do
            foo()
         end
-   elseif a=="b" 
+   elseif a~="b"
    then
       a=function() print("NONE") end
       while true  
@@ -80,7 +86,7 @@ Examples:
       c=(function() return 1 end)()
   end
   ```
-  
+
 
 
 Lua-5.1
@@ -89,7 +95,7 @@ Lua-5.1
   ------------
   See INSTALL for installation instructions,
   see HISTORY for a summary of changes since the last released version.
-  
+
   What is Lua?
   ------------
   Lua is a powerful, light-weight programming language designed for extending
@@ -101,19 +107,19 @@ Lua-5.1
 
   Lua has been used in many different projects around the world.
   For a short list, see http://www.lua.org/uses.html .
-  
+
   Availability
   ------------
   Lua is freely available for both academic and commercial purposes.
   See COPYRIGHT and http://www.lua.org/license.html for details.
   Lua can be downloaded at http://www.lua.org/download.html .
-  
+
   Installation
   ------------
   Lua is implemented in pure ANSI C, and compiles unmodified in all known
   platforms that have an ANSI C compiler. Under Unix, simply typing "make"
   should work. See INSTALL for detailed instructions.
-  
+
   Origin
   ------
   Lua is developed at Lua.org, a laboratory of the Department of Computer

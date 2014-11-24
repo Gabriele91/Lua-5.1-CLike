@@ -38,7 +38,7 @@ const char *const luaX_tokens [] = {
     "end" /*end*/, "false", "for", "def" /* function */, "if",
     "in", "local", "nil", "not", "or", "repeat",
     "return", "then", "true", "until", "while",
-    "..", "...", "==", ">=", "<=", "~=",
+    "..", "...", "==", ">=", "<=", "!=" /* NE ~= changed lines: 383 and 385 */,
     "<number>", "<name>", "<string>", "<eof>",
     NULL
 };
@@ -380,9 +380,9 @@ static int llex (LexState *ls, SemInfo *seminfo) {
         if (ls->current != '=') return '>';
         else { next(ls); return TK_GE; }
       }
-      case '~': {
+      case '!': {
         next(ls);
-        if (ls->current != '=') return '~';
+        if (ls->current != '=') return '!';
         else { next(ls); return TK_NE; }
       }
       case '"':
@@ -457,4 +457,3 @@ void luaX_lookahead (LexState *ls) {
   lua_assert(ls->lookahead.token == TK_EOS);
   ls->lookahead.token = llex(ls, &ls->lookahead.seminfo);
 }
-
