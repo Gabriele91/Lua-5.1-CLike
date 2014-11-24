@@ -5,7 +5,7 @@ Lua-5.1-CLike
 * New if statement
 
   ```BNF
-  'if' '(' <bool exp> ')' '{' <statements> '}' {'elseif' '{' <statements> '}' } ['else' '{' <statements> '}']
+  'if' '(' <bool exp> ')' '{' <statements> '}' {'elif' '{' <statements> '}' } ['else' '{' <statements> '}']
   ```
 
 * New for statement
@@ -16,7 +16,7 @@ Lua-5.1-CLike
 * New while statement
 
   ```BNF
-  'while' <bool exp>  '{' <statements> '}' 
+  'while' '(' <bool exp> ')' '{' <statements> '}' 
   ```
 
 * New function statement
@@ -41,10 +41,10 @@ Examples:
          foo()
       }
   }
-  elseif(a=="b")
+  elif(a=="b")
   {
      a=def(){ print("NONE") }
-     while true 
+     while ( true )
      {
        a()
        break;

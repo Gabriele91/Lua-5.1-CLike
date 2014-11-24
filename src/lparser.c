@@ -988,15 +988,21 @@ static void breakstat (LexState *ls) {
 
 
 static void whilestat (LexState *ls, int line) {
-  /* whilestat -> WHILE cond DO block END */
+  /* whilestat -> WHILE '(' cond ')' DO block END */
   FuncState *fs = ls->fs;
   int whileinit;
   int condexit;
   BlockCnt bl;
   luaX_next(ls);  /* skip WHILE */
+    
+  checknext(ls, '('); /* '(' */
+    
   whileinit = luaK_getlabel(fs);
   condexit = cond(ls);
   enterblock(fs, &bl, 1);
+    
+  checknext(ls, ')'); /* ')' */
+  
   checknext(ls, TK_OPEN);
   block(ls);
   luaK_patchlist(fs, luaK_jump(fs), whileinit);
