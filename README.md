@@ -25,6 +25,64 @@ Lua-5.1-CLike
   'def' [name] '(' <args> ')'  '{' <statements> '}' 
   ```
 
+Examples:
+=============
+
+  * Lua-CLike:
+  ```Javascript
+  if(a=="x")
+  {
+      def foo()
+      {
+         print("foo")
+      }
+      for i=1,200 
+      {
+         foo()
+      }
+  }
+  elseif(a=="b")
+  {
+     a=def(){ print("NONE") }
+     while true 
+     {
+       a()
+       break;
+     }
+  }
+  else
+  { 
+     c=(def(){return 1})()
+  }
+  ```
+  
+  * LUA:
+  
+  ```LUA
+  if  a=="x" 
+  then
+        function foo()
+           print("foo")
+        end
+        for i=1,200
+        do 
+           foo()
+        end
+   elseif a=="b" 
+   then
+      a=function() print("NONE") end
+      while true  
+      do
+         a()
+         break;
+      end
+  else
+      c=(function() return 1 end)()
+  end
+  ```
+  
+
+
 Lua-5.1
 =============
  * Readme
