@@ -999,9 +999,10 @@ static void whilestat (LexState *ls, int line) {
     
   whileinit = luaK_getlabel(fs);
   condexit = cond(ls);
-  enterblock(fs, &bl, 1);
-    
+
   checknext(ls, ')'); /* ')' */
+
+  enterblock(fs, &bl, 1);
   
   checknext(ls, TK_OPEN);
   block(ls);
@@ -1012,17 +1013,26 @@ static void whilestat (LexState *ls, int line) {
 }
 
 
-static void repeatstat (LexState *ls, int line) {
-  /* repeatstat -> REPEAT block UNTIL cond */
+static void dowhilestat (LexState *ls, int line) {
+  /* dowhilestat -> DO block WHILE cond */
   int condexit;
   FuncState *fs = ls->fs;
   int repeat_init = luaK_getlabel(fs);
   BlockCnt bl1, bl2;
   enterblock(fs, &bl1, 1);  /* loop block */
   enterblock(fs, &bl2, 0);  /* scope block */
-  luaX_next(ls);  /* skip REPEAT */
+  luaX_next(ls);  /* skip DO */
+
+  checknext(ls, TK_OPEN); /* { */
+
   chunk(ls);
-  check_match(ls, TK_UNTIL, TK_REPEAT, line);
+
+  check_match(ls, TK_CLOSE, TK_DO, line);  /* } */
+
+  checknext(ls, TK_WHILE); /* while */
+
+  checknext(ls, '('); /* '(' */
+
   condexit = cond(ls);  /* read condition (inside scope block) */
   if (!bl2.upval) {  /* no upvalues? */
     leaveblock(fs);  /* finish scope */
@@ -1035,6 +1045,8 @@ static void repeatstat (LexState *ls, int line) {
     luaK_patchlist(ls->fs, luaK_jump(fs), repeat_init);  /* and repeat */
   }
   leaveblock(fs);  /* finish loop */
+
+  checknext(ls, ')'); /* ')' */
 }
 
 
@@ -1307,8 +1319,8 @@ static int statement (LexState *ls) {
       forstat(ls, line);
       return 0;
     }
-    case TK_REPEAT: {  /* stat -> repeatstat */
-      repeatstat(ls, line);
+    case TK_DO: {  /* stat -> dowhilestat */
+      dowhilestat(ls, line);
       return 0;
     }
     case TK_FUNCTION: {
