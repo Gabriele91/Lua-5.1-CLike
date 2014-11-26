@@ -29,7 +29,11 @@ Lua-5.1-CLike
   ```BNF
   '!='
   ```
+* Changed "repeat until" statement  in 'do while' statement:
 
+  ```BNF
+  'do' '{' <statements> '}' while '(' <bool exp> ')'
+  ```
 
 Examples:
 =============
