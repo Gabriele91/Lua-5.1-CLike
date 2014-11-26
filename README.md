@@ -29,7 +29,7 @@ Lua-5.1-CLike
   ```BNF
   '!='
   ```
-* Changed "repeat until" statement  in 'do while' statement:
+* Changed 'repeat until' statement  in 'do while' statement:
 
   ```BNF
   'do' '{' <statements> '}' while '(' <bool exp> ')'
@@ -63,6 +63,7 @@ Examples:
   else
   {
      c=(def(){return 1})()
+     do { print"hello" } while (true)
   }
   ```
 
@@ -88,6 +89,7 @@ Examples:
       end
   else
       c=(function() return 1 end)()
+      repeat  print"hello" until false
   end
   ```
 
