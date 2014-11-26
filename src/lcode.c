@@ -559,7 +559,7 @@ void luaK_goiftrue (FuncState *fs, expdesc *e) {
 }
 
 
-static void luaK_goiffalse (FuncState *fs, expdesc *e) {
+void luaK_goiffalse (FuncState *fs, expdesc *e) {
   int pc;  /* pc of last jump */
   luaK_dischargevars(fs, e);
   switch (e->k) {

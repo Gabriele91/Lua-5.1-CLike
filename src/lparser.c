@@ -970,6 +970,14 @@ static int cond (LexState *ls) {
   return v.f;
 }
 
+static int condinv (LexState *ls) {
+    /* cond -> exp */
+    expdesc v;
+    expr(ls, &v);  /* read condition */
+    if (v.k == VNIL) v.k = VFALSE;  /* `falses' are all equal here */
+    luaK_goiffalse(ls->fs, &v);
+    return v.f;
+}
 
 static void breakstat (LexState *ls) {
   FuncState *fs = ls->fs;
@@ -1033,7 +1041,10 @@ static void dowhilestat (LexState *ls, int line) {
 
   checknext(ls, '('); /* '(' */
 
-  condexit = cond(ls);  /* read condition (inside scope block) */
+  condexit = condinv(ls);  /* read condition (inside scope block) */
+    
+  checknext(ls, ')'); /* ')' */
+    
   if (!bl2.upval) {  /* no upvalues? */
     leaveblock(fs);  /* finish scope */
     luaK_patchlist(ls->fs, condexit, repeat_init);  /* close the loop */
@@ -1046,7 +1057,6 @@ static void dowhilestat (LexState *ls, int line) {
   }
   leaveblock(fs);  /* finish loop */
 
-  checknext(ls, ')'); /* ')' */
 }
 
 
